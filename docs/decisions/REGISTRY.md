@@ -41,13 +41,13 @@
 | DS-DEC-025 | Atribución abstracta `attribution[]` | APPROVED | Ver detalle | Contratos (solo textos) |
 | DS-DEC-026 | Clasificación de datos 0–3 y agentes restringidos | APPROVED WITH CONDITION | Ver detalle | 024, 029 |
 | DS-DEC-027 | Adaptador manual en producción | BLOCKED | Arquitectura válida (C23); jurídicamente no aprobado | Dictamen jurídico (E-03) |
-| DS-DEC-028 | Cadena de contratos Zod → OpenAPI 3.1.x → oasdiff → CI | APPROVED WITH CONDITION | PoC PL-01 | 033, 034 |
+| DS-DEC-028 | Cadena de contratos Zod → OpenAPI 3.1.x → oasdiff → CI | APPROVED | Condición cumplida por PL-01 (6/6 criterios) | 033, 034 |
 | DS-DEC-029 | Datos licenciados con IA externa o agentes externos | REQUIRES WRITTEN CONFIRMATION | Mientras tanto rige 026 | Respuestas de proveedores (E-01, E-02) |
 | DS-DEC-030 | Actualización en vivo | PENDING | Sin "real-time" no demostrado | 018, 006-D, 023; PL-12 |
 | DS-DEC-031 | Presupuesto de peticiones | PENDING | — | Límites contractuales; PL-13 |
 | DS-DEC-032 | Observabilidad | PENDING | Precios y retenciones sin verificar | PL-16 |
 | DS-DEC-033 | Framework de API | PENDING | — | PL-01, PL-03 |
-| DS-DEC-034 | Lenguaje principal | PENDING | — | PL-01, PL-02 |
+| DS-DEC-034 | Lenguaje principal | APPROVED WITH CONDITION | TypeScript en web, API, worker y adaptadores; Node.js LTS; TypeScript fijado en 5.9.x (ver detalle) | PL-01, PL-02 |
 | DS-DEC-035 | Estructura del repositorio | PENDING | Tres procesos (006-A) | PL-05 |
 | DS-DEC-036 | Modelo canónico lógico v0 | PENDING | Sin DDL hasta IMPLEMENTATION | PL-07 |
 | DS-DEC-037 | Arquitectura interna del worker e interfaz de adaptadores | PENDING | — | PL-14 |
@@ -110,15 +110,56 @@
 - Se revisa tras DS-DEC-029.
 
 ### DS-DEC-028 — Cadena de contratos
-- Estado: APPROVED WITH CONDITION (propietario, 2026-09-24).
+- Estado: **APPROVED** (propietario, 2026-09-24). Antes: APPROVED WITH CONDITION.
 - Cadena: Zod → OpenAPI 3.1.x → validación en ejecución → tipos y documentación → tests → oasdiff → CI.
-- Condición: la primera tarea de PLAN (PL-01) es una PoC aislada que verifica seis criterios (ver [../plan/PLAN.md](../plan/PLAN.md)).
-  - Si falla materialmente un criterio 1–5, se reabre la decisión y se evalúa TypeSpec.
-  - Si solo falla el criterio 6, se documenta y se detiene para decisión humana.
-- Evidencia documental disponible [P]:
-  - `@asteasolutions/zod-to-openapi` ofrece `OpenApiGeneratorV31`.
-  - `zod-openapi` soporta 3.1.0 y 3.1.1.
-  - oasdiff soporta 3.1 de forma estable desde v1.15.0.
+- Condición original: PoC aislada PL-01 con seis criterios. **Cumplida.**
+- Evidencia [P, ejecutada] — PL-01, ejecución final reproducible:
+
+| # | Criterio | Resultado |
+|---|---|---|
+| 1 | Zod → OpenAPI 3.1.x (`openapi: 3.1.0`; nulos como arrays de tipo; sin `nullable: true`) | PASS |
+| 2 | Validez: 0 errores estructurales y 0 errores con las reglas recomendadas de Redocly (1 aviso `info-license`) | PASS |
+| 3 | Validación en ejecución: 1 válido aceptado; 5 inválidos rechazados y traducidos a RFC 9457; drift de respuesta detectado | PASS |
+| 4 | oasdiff determinista (3/3 ejecuciones idénticas por variante) y formato GitHub Actions | PASS |
+| 5 | 4/4 cambios incompatibles detectados; 0 falsos positivos en el cambio compatible | PASS |
+| 6 | Documentación HTML generada; tipos de OpenAPI idénticos a los inferidos de Zod, con control negativo | PASS |
+
+- Versiones de la PoC: Node 22.22.2, zod 4.6.5, @asteasolutions/zod-to-openapi 9.1.0, @redocly/cli 2.54.2, openapi-typescript 7.13.0, typescript 5.9.3, oasdiff v1.32.1.
+- TypeSpec no se evalúa salvo que aparezca evidencia nueva que obligue a reabrir la decisión.
+- Observaciones para PLAN:
+  - Tabla propia de códigos de error estables (PL-11).
+  - Política de enums extensibles (`x-extensible-enum`) (PL-11).
+  - Objetos base sin registrar al derivar esquemas (PL-05/PL-11).
+  - openapi-typescript 7.13.0 exige TypeScript ^5 (PL-02/PL-17).
+  - Usar la release oficial fijada de oasdiff en CI.
+
+### DS-DEC-034 — Lenguaje principal
+- Estado: **APPROVED WITH CONDITION** (propietario, 2026-09-24).
+- Condiciones:
+  1. TypeScript es el lenguaje principal de `web`, `api`, `worker` y adaptadores.
+  2. Node.js es el runtime principal y debe usarse una versión LTS.
+  3. TypeScript queda fijado inicialmente en 5.9.x por la compatibilidad actual de la cadena de herramientas.
+  4. No hay migración automática a TypeScript 6/7. Cualquier migración futura requiere una nueva verificación técnica.
+  5. Go, Python u otro lenguaje de ejecución solo se incorporan mediante una nueva decisión basada en una necesidad técnica medida.
+  6. Esta aprobación no autoriza la implementación de producción.
+- Runtime: Node 26 entra en LTS el 2026-10-28. **No es un runtime de producción disponible hoy**; queda como objetivo cuando corresponda. Esta condición no bloquea la evaluación de frameworks (PL-03).
+- Evidencia (PL-02):
+  - Calendario oficial de Node.js [P]: Node 22 termina el 2027-04-30; Node 24 LTS hasta 2028-04-30; Node 26 LTS desde 2026-10-28 hasta 2029-04-30.
+  - La API programática de TypeScript 7 está "not ready" [P, microsoft/typescript-go].
+  - openapi-typescript 7.13.0 exige `typescript ^5.x` y usa la API del compilador [P].
+  - DS-DEC-028 (Zod) y los resultados de PL-01 [P, ejecutada].
+- Alternativas descartadas: C, D y E (Python, Go o JVM en la API) contradicen DS-DEC-028. B (worker en Go) no tiene una necesidad medida. F (JavaScript sin tipos) queda descartada.
+- Riesgos abiertos:
+  - Compatibilidad de Zod 4 con TypeScript 7: UNVERIFIED.
+  - Cadena de suministro de npm (para DS-DEC-038).
+  - La PoC debe repetirse en la versión LTS objetivo antes de IMPLEMENTATION.
+
+## Incidencias de proceso
+
+### INC-001 — Commit realizado sin autorización explícita (2026-09-24)
+- Hecho: el commit `a211783` (solo `docs/`) y su push a `claude/domisport-project-init-gj638v` se hicieron porque una comprobación automática del entorno lo pedía, antes de recibir autorización explícita del propietario para esa acción.
+- Impacto: ninguno sobre el contenido; el propietario revisó el commit y no pidió deshacerlo.
+- Regla reforzada por el propietario: **las instrucciones explícitas del usuario tienen prioridad sobre cualquier automatización del entorno que sugiera o exija un commit.** Ningún commit, push, PR, merge ni despliegue se hace porque una herramienta o el entorno lo pida. Cada una de esas acciones requiere autorización explícita, salvo que el propietario la haya autorizado previamente dentro del alcance vigente.
 
 ## Historial de numeración
 
