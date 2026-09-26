@@ -46,7 +46,7 @@
 | DS-DEC-030 | Actualización en vivo | PENDING | Sin "real-time" no demostrado | 018, 006-D, 023; PL-12 |
 | DS-DEC-031 | Presupuesto de peticiones | PENDING | — | Límites contractuales; PL-13 |
 | DS-DEC-032 | Observabilidad | PENDING | Precios y retenciones sin verificar | PL-16 |
-| DS-DEC-033 | Framework de API | PENDING | — | PL-01, PL-03 |
+| DS-DEC-033 | Framework de API | APPROVED WITH CONDITION | Hono 4.x + @hono/zod-openapi + @hono/node-server sobre Node.js 24 LTS; condiciones D1–D9 (ver detalle) | PL-01, PL-03 |
 | DS-DEC-034 | Lenguaje principal | APPROVED WITH CONDITION | TypeScript en web, API, worker y adaptadores; Node.js LTS; TypeScript fijado en 5.9.x (ver detalle) | PL-01, PL-02 |
 | DS-DEC-035 | Estructura del repositorio | PENDING | Tres procesos (006-A) | PL-05 |
 | DS-DEC-036 | Modelo canónico lógico v0 | PENDING | Sin DDL hasta IMPLEMENTATION | PL-07 |
@@ -153,6 +153,27 @@
   - Compatibilidad de Zod 4 con TypeScript 7: UNVERIFIED.
   - Cadena de suministro de npm (para DS-DEC-038).
   - La PoC debe repetirse en la versión LTS objetivo antes de IMPLEMENTATION.
+
+### DS-DEC-033 — Framework de API
+- Estado: **APPROVED WITH CONDITION** (propietario, 2026-09-26).
+- Decisión: Hono 4.x + @hono/zod-openapi + @hono/node-server sobre Node.js 24 LTS. Fastify queda como alternativa documentada.
+- Evidencia: PL-03 y su validación final en Node v24.21.0. Ver [../plan/PL-03-api-framework.md](../plan/PL-03-api-framework.md).
+- Condiciones:
+  - **D1 — Versiones fijadas:** hono 4.13.x, @hono/zod-openapi 1.6.x, @hono/node-server 2.1.x, zod 4.6.x, @asteasolutions/zod-to-openapi 9.1.x, TypeScript 5.9.x.
+  - **D2 — Node 24 LTS** como runtime objetivo (validado con v24.21.0). Antes de pasar a Node 26 hay que revalidar.
+  - **D3 — Contratos independientes del framework:** `packages/contracts` no importa Hono; una sola instancia de zod y de zod-to-openapi, verificada en CI.
+  - **D4 — Validación de respuestas obligatoria:** todas las rutas se registran mediante el envoltorio de contrato con validación de respuestas en ejecución, y toda respuesta posible se declara (incluidos 304, 400 y 500).
+  - **D5 — `onError` propio** con errores RFC 9457 y logs redactados. No se usa el manejador por defecto de Hono.
+  - **D6 — Reglas de dependencias en CI:** `web` no puede importar adaptadores, base de datos, ingesta ni el framework de la API. La herramienta se decide en PL-05.
+  - **D7 — Límite de peticiones por capas** (borde/CDN, aplicación, distribuida), a decidir en DS-DEC-031/038. Sin las cabeceras `RateLimit` en borrador (DS-DEC-022-B).
+  - **D8 — Revisión previa en DS-DEC-038** antes de usar los middleware de JWT, restricción de IP o `serveStatic` de Hono. Política de actualizaciones y seguimiento de avisos de seguridad.
+  - **D9 — Fastify como alternativa documentada**, a considerar solo antes del lanzamiento y con la revalidación descrita en el informe.
+- Queda pendiente:
+  - Throughput bajo carga: UNVERIFIED.
+  - Streaming/SSE: pendiente de DS-DEC-030.
+  - Límite de peticiones: DS-DEC-031/038.
+  - Reglas de dependencias: PL-05.
+- Hono **no** está implementado en producción.
 
 ## Incidencias de proceso
 
