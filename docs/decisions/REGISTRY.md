@@ -44,7 +44,7 @@
 | DS-DEC-028 | Cadena de contratos Zod → OpenAPI 3.1.x → oasdiff → CI | APPROVED | Condición cumplida por PL-01 (6/6 criterios) | 033, 034 |
 | DS-DEC-029 | Datos licenciados con IA externa o agentes externos | REQUIRES WRITTEN CONFIRMATION | Mientras tanto rige 026 | Respuestas de proveedores (E-01, E-02) |
 | DS-DEC-030 | Actualización en vivo | PROPOSED | V1: sondeo con caché en el CDN; SSE no se implementa (capacidad futura condicionada, ver detalle). Sin "real-time" no demostrado | 018, 006-D, 023, 031, 033-D4, 040, 002, 003, 017, 022-C, 024; PL-12 |
-| DS-DEC-031 | Presupuesto de peticiones | PENDING | Solo peticiones SALIENTES hacia los proveedores de datos. El límite entrante es DS-DEC-040 (ver INC-002) | Límites contractuales; 018; 030 (demanda de frescura, relación iterativa); PL-13 |
+| DS-DEC-031 | Presupuesto de peticiones | PROPOSED | Solo peticiones SALIENTES hacia los proveedores de datos. El límite entrante es DS-DEC-040 (ver INC-002). Principios sin valores numéricos (ver detalle) | Límites contractuales; 018; 030 (demanda de frescura, relación iterativa); 032; 037; 006-B; 007/009/002; 024/026; E-01/E-02/E-06; PL-13 |
 | DS-DEC-032 | Observabilidad | PENDING | Precios y retenciones sin verificar | PL-16 |
 | DS-DEC-033 | Framework de API | APPROVED WITH CONDITION | Hono 4.x + @hono/zod-openapi + @hono/node-server sobre Node.js 24 LTS; condiciones D1–D9 (ver detalle) | PL-01, PL-03 |
 | DS-DEC-034 | Lenguaje principal | APPROVED WITH CONDITION | TypeScript en web, API, worker y adaptadores; Node.js LTS; TypeScript fijado en 5.9.x (ver detalle) | PL-01, PL-02 |
@@ -226,6 +226,104 @@
   6. Purga y corrección de datos: corrección de resultados ya servidos (expiración o purga) y purga por fuente de DS-DEC-024 en la caché del CDN.
   7. Diferencias de frescura entre deportes, sujetas al alcance de V1 (DS-DEC-002) y a los proveedores.
 - Dependencias y puntos relacionados: DS-DEC-018, DS-DEC-031, DS-DEC-006-D, DS-DEC-023, DS-DEC-033 (D4), DS-DEC-040, DS-DEC-002, DS-DEC-003, DS-DEC-017, DS-DEC-022-C y DS-DEC-024; PL-12.
+
+### DS-DEC-031 — Presupuesto de peticiones
+- Estado: **PROPOSED** (2026-09-26; paso de PENDING a PROPOSED autorizado por el propietario). No aprobada.
+- Base: auditoría de DS-DEC-031 (2026-09-26), validada por el propietario con observaciones.
+- Ningún valor numérico se fija aquí: cuotas, QPS, ventanas de producción, intervalos de sondeo, reintentos, esperas y umbrales quedan pendientes (punto 14).
+
+**1. Ámbito**
+- Incluye: peticiones **salientes** desde los workers de DomiSport hacia los proveedores deportivos: REST, conexiones o push iniciados por DomiSport, reintentos, cargas históricas y correcciones.
+- Excluye:
+  - el tráfico entrante hacia DomiSport (DS-DEC-040);
+  - las peticiones del navegador al CDN y a la web, que no generan peticiones a proveedores (DS-DEC-030);
+  - los webhooks entrantes (el proveedor llama a DomiSport), que requieren una decisión posterior (DS-DEC-030, DS-DEC-006-A).
+
+**2. Presupuesto por proveedor y ámbito del límite**
+- Un presupuesto por proveedor y por el ámbito real en el que el proveedor aplica su límite: clave o cuenta, producto deportivo y nivel, o entidad.
+- No se transfiere cuota entre proveedores ni se extrapolan límites entre proveedores ni entre productos de un mismo proveedor.
+
+**3. Ventanas**
+- El modelo admite varias ventanas simultáneas por ámbito (por segundo, minuto, hora, día, mes o ventanas móviles, según el proveedor) e incluye el QPS cuando el proveedor lo aplica.
+- El límite efectivo en cada momento es el más restrictivo de las ventanas aplicables.
+
+**4. Contabilidad**
+- DomiSport lleva su propia contabilidad del consumo por ámbito y ventana.
+- Las cabeceras de límite del proveedor son una señal auxiliar. El diseño no depende de que un proveedor las exponga.
+
+**5. Prueba y producción**
+- Los límites de los planes gratuitos o de prueba no se tratan como límites de producción.
+
+**6. `Retry-After`**
+- Se respeta cuando el proveedor lo envía, en cualquiera de sus dos formatos: `HTTP-date` o `delay-seconds` (RFC 9110 §10.2.3).
+- No se supone que exista: RFC 6585 §4 lo deja como opcional (`MAY`) en el 429, y la especificación oficial de BALLDONTLIE no lo declara (punto 13).
+
+**7. Reintentos (política interna)**
+- Solo para operaciones y métodos apropiados para reintento (métodos idempotentes, RFC 9110 §9.2.2).
+- Con tope y con dispersión aleatoria de la espera. Los valores y el algoritmo concreto quedan pendientes.
+- Los reintentos cuentan contra el presupuesto. Es una política conservadora interna de DomiSport, **no** una regla contractual universal de los proveedores (INFERRED).
+
+**8. Frecuencia de actualización, frescura, caché y sondeo**
+- `U`: frecuencia de actualización del proveedor, por endpoint y estado del evento.
+- `F`: frescura objetivo de DomiSport (DS-DEC-018).
+- `T`: semántica de caché de la respuesta del proveedor (`Cache-Control`, RFC 9111). Indica durante cuánto tiempo una caché puede reutilizar la respuesta; **no es un límite de frecuencia impuesto al cliente**.
+- `I_r`: intervalo de sondeo de cada recurso.
+- La viabilidad de `I_r` depende a la vez de `F` (junto con las demás latencias de la cadena, DS-DEC-030), de `U`, de la cuota de cada ventana aplicable y del QPS. Es un marco conceptual: no se fijan valores ni una relación normativa entre `I_r`, `U` y `T` (pendiente, punto 14).
+- Si las restricciones hacen incompatible la frescura objetivo con la cuota disponible, DomiSport podrá evaluar push, otro plan u otro proveedor, o bajar la prioridad del recurso. No se selecciona ninguna opción aquí.
+
+**9. Prioridades**
+- Estructura de niveles de prioridad por tipo de dato y estado del evento.
+- El número de niveles, su orden y el criterio de recorte ante escasez de cuota quedan **pendientes de decisión del propietario**.
+
+**10. Coordinación entre réplicas**
+- Si hay varias réplicas del worker, debe existir una única autoridad de presupuesto por ámbito, de modo que el consumo no se multiplique por el número de réplicas.
+- El mecanismo técnico corresponde a DS-DEC-037 (PL-14) y no se diseña aquí.
+
+**11. Protección y degradación**
+- Se permite cortar o degradar por proveedor y por nivel de prioridad ante el agotamiento de la cuota o ante respuestas de límite o de fallo del proveedor.
+- Pendientes: códigos concretos, umbrales, tiempos, qué nivel se recorta primero y el algoritmo de corte o degradación.
+
+**12. Observabilidad (con DS-DEC-032; herramientas no fijadas aquí)**
+- Consumo por proveedor, ámbito y ventana.
+- Cuota restante, cuando el proveedor la exponga.
+- Respuestas 429, 403 y 5xx.
+- Reintentos.
+- Latencia de las peticiones.
+- Retraso entre `source_updated_at` y `fetched_at`.
+- Sin payloads de proveedores en los logs (DS-DEC-026).
+
+**13. Evidencia**
+- Confirmado por el propietario (2026-09-26). Es una descripción de procedencia, no una categoría formal de evidencia (ver la observación pendiente de este punto). Valores de producción UNVERIFIED:
+  - Sportradar aplica una cuota en ventana móvil y un QPS. Sus valores de prueba no son límites de producción. La duración de la ventana y los valores de producción no se fijan aquí y quedan pendientes de validación.
+  - API-Sports documenta una cuota diaria, un límite por minuto y cabeceras de límite.
+  - Sportmonks (API 3.0) aplica un límite por entidad y hora en los planes por defecto.
+- [P, repositorio oficial `balldontlie-api/mcp` @ `80cb51f` (especificación OpenAPI oficial) y SDK oficiales `@balldontlie/sdk` y `balldontlie-api/python`; no cotejado con la especificación canónica de su web, inaccesible desde el entorno]:
+  - BALLDONTLIE define el límite por deporte y nivel como `rate_limit` peticiones por `rate_limit_window_seconds`.
+  - Responde 429 ("Too many requests") en las rutas MLB.
+  - La especificación no declara cabeceras de límite ni `Retry-After`.
+  - Los SDK oficiales tratan el 429 como error y no reintentan.
+  - Valores por nivel: UNVERIFIED.
+- [P, RFC 9110 §9.2.2 y §10.2.3; RFC 6585 §4 — copia publicada por el IETF HTTP Working Group, cotejo con rfc-editor.org pendiente].
+- [P-r] / UNVERIFIED: SportsDataIO, football-data.org, TheSportsDB, MySportsFeeds, Goalserve, Genius Sports y LIDOM (acceso directo a sus fuentes bloqueado desde el entorno).
+- Contradicciones sin resolver [P-r]: Sportradar, código de respuesta al exceder el límite (403 frente a 429) y TTL de los partidos cerrados.
+- Observación pendiente: la convención de etiquetas de evidencia ([README.md](README.md): `P`, `P-r`, `S`, `UNVERIFIED`) no contempla la evidencia confirmada por el propietario sin lectura directa de la fuente. Se registra aquí como "confirmado por el propietario", sin etiqueta. Esta mención no crea una nueva categoría formal de evidencia. La convención queda pendiente de decisión del propietario.
+
+**14. Parámetros pendientes (sin valores)**
+- Cuotas, QPS y ventanas de producción por proveedor, y si una respuesta 304 consume cuota.
+- Intervalos de sondeo, número de reintentos, esperas y umbrales de corte.
+- Relación cuantitativa entre `I_r`, `U` y `T`.
+- Orden de los niveles de prioridad y criterio de recorte ante escasez de cuota.
+- Herramientas de observabilidad (DS-DEC-032).
+- Selección de proveedores y reparto entre ellos (DS-DEC-007, DS-DEC-009, DS-DEC-002).
+- Push de un proveedor concreto; webhooks entrantes.
+- Mecanismo de coordinación entre réplicas (DS-DEC-037).
+- Almacenamiento y retención de datos de proveedores (DS-SRC, DS-DEC-024).
+- Claves por entorno (según contrato).
+- Presupuesto económico (E-06).
+- Peor caso (calendario y alcance, DS-DEC-002).
+- SLO de frescura (DS-DEC-018).
+
+**Dependencias:** DS-DEC-018, DS-DEC-030 (relación iterativa), DS-DEC-032, DS-DEC-037, DS-DEC-006-B (réplicas del worker e IP de salida), DS-DEC-007, DS-DEC-009, DS-DEC-002, DS-DEC-024 y DS-DEC-026; tareas E-01, E-02 y E-06; PL-13. **Sin dependencia directa con DS-DEC-038 ni con DS-DEC-040.**
 
 ### DS-DEC-040 — Límite de peticiones entrante (rate limiting)
 - Estado: **PROPOSED** (creada el 2026-09-25 con autorización del propietario). No aprobada.

@@ -44,8 +44,8 @@ La única excepción es la PoC PL-01, en las condiciones indicadas más abajo.
 | PL-10 | Diseño detallado de procedencia y purga | Condición de 024 | PL-07 | Dis + DH | No iniciada |
 | PL-11 | Diseño del contrato /v1, en texto | 022-C | PL-01, 07, 09, 10 | Dis + DH | No iniciada |
 | PL-12 | Estrategia de actualización en vivo | 030 | PL-09, 023, 006-C. Cierre condicionado a: 006-D (PL-20), 002 (PL-21), 003 (PL-04), 017 (PL-08), 022-C (PL-11), 031 (PL-13, iterativa), 040 | Dis + DH | No iniciada |
-| PL-13 | Modelo de presupuesto de peticiones | 031 | PL-12 (relación iterativa con PL-12, ver DS-DEC-030). Cierre condicionado a: límites contractuales (E-01, E-02), 007/009 (PL-21), E-06 | Dis + DH | No iniciada |
-| PL-14 | Arquitectura del worker e interfaz de adaptadores | 037 | PL-08, 13, 006-A | Dis + DH | No iniciada |
+| PL-13 | Modelo de presupuesto de peticiones (requisito y política; el mecanismo de coordinación entre réplicas corresponde a PL-14 / DS-DEC-037) | 031 | PL-12 (relación iterativa con PL-12, ver DS-DEC-030). Cierre condicionado a: límites contractuales (E-01, E-02), 007/009 (PL-21), E-06 | Dis + DH | No iniciada |
+| PL-14 | Arquitectura del worker e interfaz de adaptadores (incluye el mecanismo de coordinación del presupuesto entre réplicas que exige DS-DEC-031) | 037 | PL-08, 13, 006-A | Dis + DH | No iniciada |
 | PL-15 | Línea base de seguridad | 038 | PL-05, 11, 14. Cierre condicionado a (proxy de confianza): 006-B y 006-D (PL-20) | Dis + DH | No iniciada |
 | PL-16 | Observabilidad | 032 | PL-09, 14 | Inv + Dis + DH | No iniciada |
 | PL-17 | Estrategia de pruebas y puertas de CI | 039 | PL-01, 05, 08, 11 | Dis + DH | No iniciada |
