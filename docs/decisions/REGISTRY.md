@@ -43,7 +43,7 @@
 | DS-DEC-027 | Adaptador manual en producción | BLOCKED | Arquitectura válida (C23); jurídicamente no aprobado | Dictamen jurídico (E-03) |
 | DS-DEC-028 | Cadena de contratos Zod → OpenAPI 3.1.x → oasdiff → CI | APPROVED | Condición cumplida por PL-01 (6/6 criterios) | 033, 034 |
 | DS-DEC-029 | Datos licenciados con IA externa o agentes externos | REQUIRES WRITTEN CONFIRMATION | Mientras tanto rige 026 | Respuestas de proveedores (E-01, E-02) |
-| DS-DEC-030 | Actualización en vivo | PROPOSED | V1: sondeo con caché en el CDN; SSE no se implementa (capacidad futura condicionada, ver detalle). Sin "real-time" no demostrado | 018, 006-D, 023, 031, 033-D4, 040; PL-12 |
+| DS-DEC-030 | Actualización en vivo | PROPOSED | V1: sondeo con caché en el CDN; SSE no se implementa (capacidad futura condicionada, ver detalle). Sin "real-time" no demostrado | 018, 006-D, 023, 031, 033-D4, 040, 002, 003, 017, 022-C, 024; PL-12 |
 | DS-DEC-031 | Presupuesto de peticiones | PENDING | — | Límites contractuales; PL-13 |
 | DS-DEC-032 | Observabilidad | PENDING | Precios y retenciones sin verificar | PL-16 |
 | DS-DEC-033 | Framework de API | APPROVED WITH CONDITION | Hono 4.x + @hono/zod-openapi + @hono/node-server sobre Node.js 24 LTS; condiciones D1–D9 (ver detalle) | PL-01, PL-03 |
@@ -53,7 +53,7 @@
 | DS-DEC-037 | Arquitectura interna del worker e interfaz de adaptadores | PENDING | — | PL-14 |
 | DS-DEC-038 | Línea base de seguridad | PENDING | — | PL-15 |
 | DS-DEC-039 | Estrategia de pruebas y puertas de CI | PENDING | — | PL-17 |
-| DS-DEC-040 | Límite de peticiones entrante (rate limiting) | PROPOSED | Solo tráfico ENTRANTE (CDN/borde, web, API). Excluye DS-DEC-031. Alternativas y política ante fallo pendientes; sin valores numéricos (ver detalle) | 023, 033 (D4, D7), 006-B, 006-C, 006-D, 004-A, 004-B, 022-B, 038 |
+| DS-DEC-040 | Límite de peticiones entrante (rate limiting) | PROPOSED | Solo tráfico ENTRANTE (CDN/borde, web, API). Excluye DS-DEC-031. Alternativas y política ante fallo pendientes; sin valores numéricos (ver detalle) | 023, 033 (D4, D7), 006-B, 006-C, 006-D, 004-A, 004-B, 018, 022-B, 038, 003, 024, 026, 030 |
 
 **Proveedores seleccionados:** ninguno (datos, infraestructura, PostgreSQL y CDN).
 
@@ -185,7 +185,11 @@
 
 ### DS-DEC-030 — Actualización en vivo
 - Estado: **PROPOSED** (2026-09-25; paso de PENDING a PROPOSED autorizado por el propietario). No aprobada.
-- Propuesta para V1: **sondeo periódico** de endpoints de la web cacheados en el CDN (`s-maxage` corto + `stale-while-revalidate`). Es compatible con la validación de respuestas de DS-DEC-033 (D4) sin excepciones.
+- Propuesta para V1: **sondeo periódico** de endpoints de la web cacheados en el CDN (`s-maxage` corto + `stale-while-revalidate`).
+- Relación con DS-DEC-033 D4:
+  - D4 gobierna actualmente las respuestas de la API `/v1`. El sondeo **no crea ninguna excepción nueva** a D4.
+  - El navegador puede sondear **endpoints de la web** que todavía no tienen un contrato ni un validador formal definidos.
+  - El contrato y la validación de esos endpoints quedan pendientes de PL-04/PL-12.
 - **SSE no se implementa.** Queda solo como capacidad futura, sujeta a mediciones y a una decisión nueva, y siempre que se cumplan todas estas condiciones:
   1. Un SLO de frescura (DS-DEC-018) que el sondeo no pueda cumplir, demostrado con mediciones.
   2. Validación por evento contra el contrato, como excepción documentada a DS-DEC-033 D4 (el middleware de validación lee el cuerpo completo y no es compatible con streams).
@@ -193,19 +197,38 @@
   4. Mensajes de mantenimiento de la conexión (heartbeat/keepalive) con un intervalo inferior al timeout del CDN elegido. En Cloudflare, el Proxy Read Timeout es de 125 s [P]; si se reinicia con cada fragmento de un stream es UNVERIFIED.
   5. Comportamiento del proveedor de CDN (DS-DEC-006-D) con streams verificado: búfer, timeouts y HTTP/2 hacia el navegador.
   6. Estrategia para varias réplicas, sin infraestructura nueva salvo necesidad medida.
+  7. Una ingesta suficientemente más rápida que el sondeo: la latencia de ingesta medida debe ser claramente menor que la antigüedad que ya produce el sondeo con caché. Si no, SSE no mejora la frescura.
+  8. Un recorrido de los eventos definido de extremo a extremo (origen del evento → API → web → navegador), respetando que el navegador no accede a la API (DS-DEC-023).
+  9. Soporte de conexiones de larga duración en el framework web (DS-DEC-003).
+  10. Reconexiones y despliegues analizados: reconexión masiva tras un despliegue o reinicio y reanudación del stream.
+  11. Límites de conexiones analizados, además de la condición 3: límite de conexiones simultáneas por origen en el navegador con HTTP/1.1 [S] y límites de la plataforma y del CDN.
+  12. Un modelo de coste medible: conexiones mantenidas por usuario en el origen frente a peticiones servidas desde la caché con sondeo.
 - Estas condiciones **no** son implementación actual.
 - Parámetros pendientes: TTL, intervalo de sondeo y SLO (dependen de DS-DEC-018, DS-DEC-006-D y PL-12).
-- La frescura de extremo a extremo no puede superar la cadencia de consulta a los proveedores (DS-DEC-031).
+- Relación con DS-DEC-031:
+  - La cadencia de consulta a los proveedores (DS-DEC-031) **no es un techo de frescura**. Es una restricción sobre la **antigüedad mínima posible** del dato: ninguna combinación de TTL e intervalo de sondeo puede servir un dato más reciente de lo que permiten la latencia del proveedor y la cadencia de ingesta.
+  - Si una fuente entrega los datos por push, la antigüedad mínima depende de la latencia de esa entrega y no de la cadencia de consulta. La relación con DS-DEC-031 se reevalúa para esa fuente.
+- Pendientes (sin valores numéricos):
+  1. Cadena completa de obsolescencia: latencia del proveedor, ingesta (DS-DEC-031), validación y cuarentena (DS-DEC-017), posible caché de la web sobre la API, caché del CDN (`s-maxage`, `stale-while-revalidate`), intervalo de sondeo y caché del navegador. Incluye qué capa emite cada cabecera.
+  2. Matriz de caché por tipo de dato (en vivo, resultados, calendario, clasificaciones, plantillas u otros) y por estado del evento (programado, en juego, suspendido o retrasado, finalizado, corregido).
+  3. Marca temporal de actualización del dato en la respuesta, para mostrar su antigüedad. `source_updated_at` puede ser `NULL` (DS-DEC-018); la estructura de `meta` depende de DS-DEC-022-C.
+  4. Comportamiento con `stale-if-error`, solo si el CDN finalmente seleccionado (DS-DEC-006-D) lo soporta.
+  5. Comportamiento del cliente: pausa con la pestaña oculta, dispersión de las consultas, respeto de `Retry-After` y fin del sondeo al terminar el evento.
+  6. Purga y corrección de datos: corrección de resultados ya servidos (expiración o purga) y purga por fuente de DS-DEC-024 en la caché del CDN.
+  7. Diferencias de frescura entre deportes, sujetas al alcance de V1 (DS-DEC-002) y a los proveedores.
+- Dependencias y puntos relacionados: DS-DEC-018, DS-DEC-031, DS-DEC-006-D, DS-DEC-023, DS-DEC-033 (D4), DS-DEC-040, DS-DEC-002, DS-DEC-003, DS-DEC-017, DS-DEC-022-C y DS-DEC-024; PL-12.
 
 ### DS-DEC-040 — Límite de peticiones entrante (rate limiting)
 - Estado: **PROPOSED** (creada el 2026-09-25 con autorización del propietario). No aprobada.
 - Ámbito: peticiones **ENTRANTES** a la capa CDN/borde, al servidor web y a la API de DomiSport.
 - Excluye: el presupuesto de peticiones **salientes** hacia los proveedores deportivos (DS-DEC-031).
 - Origen: condición D7 de DS-DEC-033, según la fe de erratas E-033-01.
-- Ningún valor numérico se fija aquí: límites, ventanas, número de réplicas y valores de `Retry-After` se definen más adelante (PL-12/PL-15).
+- Ningún valor numérico se fija aquí: límites, ventanas, número de réplicas y valores de `Retry-After` se definen más adelante. La tarea de PLAN que los defina no está asignada (punto 10).
 
 **1. CDN/borde**
-- Protege las páginas y los endpoints públicos de la web. No protege la API, que es privada (DS-DEC-023).
+- Protege las páginas y los endpoints públicos de la web.
+- No protege la API: el CDN está delante de la web, no de la API (DS-DEC-006-A).
+- La exposición de red de la API **no está determinada**. DS-DEC-023 exige red privada solo si el proveedor la ofrece, y eso depende de DS-DEC-006-B (PENDING). Si no la ofrece, la API queda autenticada pero accesible desde Internet (ver punto 3).
 - Solo capacidades sustituibles (DS-DEC-006-C); el proveedor depende de DS-DEC-006-D.
 - Límite conocido en Cloudflare [P]: los contadores van por centro de datos y no son globales; el plan Free admite 1 regla.
 - Por sí sola no es control suficiente.
@@ -215,10 +238,13 @@
 - Clave de límite: la IP del cliente, obtenida según el punto 7.
 
 **3. API**
-- Clave de límite: la credencial de servicio (servidor web, futuros socios, agentes internos).
+- Clave de límite: un **identificador no secreto del consumidor** asociado a su credencial de servicio (servidor web, futuros socios, agentes internos).
+- La clave **nunca** es el secreto ni ningún material de la credencial, para que no llegue al almacén de contadores ni a los logs (DS-DEC-026, clase 3).
 - Un límite por IP del usuario final en la API es opcional y solo si la web la reenvía por un canal de confianza.
+- **Pendiente: protección previa a la autenticación.** Si la API termina siendo accesible desde Internet (punto 1), el límite por consumidor solo actúa después de autenticar. Las peticiones sin credencial o con credenciales inválidas necesitan su propia protección. Mecanismo y orden respecto a la autenticación: pendientes.
+- **Pendiente: granularidad de las credenciales** por consumidor, entorno, servicio y réplica. DS-DEC-023 fija credenciales de servicio por entorno y con rotación, pero no si cada consumidor o réplica tiene la suya. Si todas las réplicas de la web comparten una credencial, su límite es un único contador para todo el tráfico del sitio.
 
-**4. Alternativa técnica: contadores en memoria local**
+**4. Opción técnica (no decidida): contadores en memoria local**
 - Exactitud: el contador es exacto solo dentro de un único proceso y mientras ese proceso sigue vivo.
 - Reinicios: se pierden los contadores y la ventana vuelve a cero, lo que permite una ráfaga adicional.
 - Varios procesos en la misma máquina (cluster, varios workers): cada uno tiene sus propios contadores; el límite efectivo se multiplica por el número de procesos, salvo que se coordinen.
@@ -227,28 +253,33 @@
 - Un contador en memoria local **nunca** es un contador global.
 
 **5. Varias réplicas: alternativas técnicas a evaluar (ninguna decidida)**
+- Son opciones, no decisiones. **PostgreSQL no es la solución elegida.**
 - 5.a Almacén compartido en PostgreSQL (DS-DEC-004-A), sin infraestructura nueva. Límite global con incrementos atómicos [P, rate-limiter-flexible]. Coste de una operación en la base de datos por petición limitada; latencia y carga bajo carga: UNVERIFIED.
 - 5.b Límite por réplica = límite total / número de réplicas (**alternativa a evaluar**):
   - Autoescalado: si cambia el número de réplicas y no se recalcula, el límite efectivo se desvía.
   - Cambios de réplicas: las réplicas nuevas arrancan con contadores vacíos.
   - Tráfico desigual: con balanceo por IP o afinidad, un cliente fijado a una réplica solo recibe total/N; uno repartido puede acercarse al total.
   - Sin almacén compartido; precisión aproximada y dependiente del balanceador.
-- 5.c Redis/Valkey: solo con necesidad medida y una decisión nueva.
+- 5.c Redis/Valkey: solo con necesidad medida y mediante una decisión posterior.
 
 **6. Respuesta 429 (web y API)**
+- `429` para el exceso atribuible al cliente.
 - Cuerpo RFC 9457 (`application/problem+json`) con el código estable `RATE_LIMITED`.
 - Cabecera `Retry-After` en segundos (RFC 6585 [P-r]).
 - `Cache-Control: no-store` (RFC 6585 [P-r]: un 429 no debe almacenarse en caché).
-- El 429 se declara en el contrato de cada ruta que pueda emitirlo (DS-DEC-033 D4).
-- Sin cabeceras `RateLimit` en borrador (DS-DEC-022-B).
+- El 429 se declara en el contrato de cada ruta de la API `/v1` que pueda emitirlo (DS-DEC-033 D4).
+- Ámbito del contrato: el contrato RFC 9457 cubre actualmente la API `/v1`. Los endpoints de la web necesitarán su propio contrato y su validación si se decide exigirlo (PL-04/PL-12).
+- Sin cabeceras `RateLimit` mientras DS-DEC-022-B así lo determine.
 - Un 429 generado por el CDN puede no seguir RFC 9457; se acepta o se personaliza según el proveedor (DS-DEC-006-D).
-- Si se adoptara la opción 8.b, el `503` + `Retry-After` debería declararse también en los contratos afectados (DS-DEC-033 D4).
+- `503` + `Retry-After`: solo como opción para la indisponibilidad temporal o el fallo del almacén, si posteriormente se eligiera fail-closed (8.b). En ese caso llevaría también `Cache-Control: no-store` y debería declararse en los contratos afectados (DS-DEC-033 D4). `Cache-Control: no-store` es un requisito de la opción fail-closed, **no** una selección de fail-closed (propietario, 2026-09-25).
 
 **7. Confianza en la IP detrás del CDN**
 - La cabecera con la IP del cliente (en Cloudflare, `CF-Connecting-IP` [P]) solo es fiable si el origen acepta **únicamente** tráfico del CDN.
 - Configuración independiente del proveedor: lista de proxies de confianza y nombre de cabecera configurables.
 - Si la petición no viene de un proxy de confianza, la cabecera se ignora y se usa la IP del socket.
-- El mecanismo que restringe el origen al CDN depende de DS-DEC-006-D y DS-DEC-038.
+- El mecanismo que restringe el origen al CDN depende de DS-DEC-006-B, DS-DEC-006-D y DS-DEC-038.
+- **Riesgo pendiente: resolución de la IP en la cadena navegador → CDN → proxy/ingress → web/API.** Si la plataforma añade su propio proxy o ingress, la IP del socket que ve la aplicación puede ser la de ese proxy y no la del CDN ni la del cliente. En ese caso, recurrir a la IP del socket haría que todos los usuarios compartieran una sola clave. Proveedor, rangos de IP y mecanismo de autenticación del origen: sin definir (DS-DEC-006-B, DS-DEC-006-D).
+- **Reparto con DS-DEC-038 (aprobado documentalmente por el propietario el 2026-09-25; el punto sigue PENDING):** DS-DEC-038 es dueña de la política y del mecanismo de proxy de confianza; DS-DEC-040 consume esa política para aplicar el límite de peticiones. Es coherente con la tabla de decisiones posteriores del informe de PL-03. **No cambia el estado de DS-DEC-038 (PENDING) ni aprueba DS-DEC-040 (PROPOSED).**
 
 **8. Política ante el fallo del almacén compartido: PENDIENTE DE DECISIÓN (no se fija aquí)**
 - a) Dejar pasar sin limitar (fail-open): mantiene la disponibilidad y pierde la protección mientras dure el fallo. La capa CDN sigue activa para la web; en la API el riesgo es menor en V1 (solo credenciales internas, DS-DEC-023). Riesgo: tumbar el almacén desactiva el límite.
@@ -257,8 +288,23 @@
 - d) Otras alternativas: política por tipo de ruta (rechazar en rutas costosas o sensibles, dejar pasar en lecturas baratas o cacheadas); corte rápido (circuit breaker) con timeout corto hacia el almacén; apoyarse en la capa CDN durante el fallo.
 - Evidencia que falta: latencia y modos de fallo del almacén en el proveedor de DS-DEC-004-B; tráfico real; tolerancia a la indisponibilidad (DS-DEC-018).
 
+**9. Pendientes (sin valores numéricos)**
+- IPv4 y CGNAT: varios usuarios pueden compartir una IP (riesgo de falsos positivos).
+- IPv6 y prefijos: clave por dirección individual frente a clave agregada por prefijo.
+- Privacidad y retención de la IP: si la IP del cliente se persiste como clave, puede ser un dato personal (DS-DEC-026, DS-DEC-024). Puede requerir criterio jurídico (E-03).
+- Algoritmo de límite: ventana fija, ventana deslizante o token bucket. El almacén PostgreSQL de rate-limiter-flexible aplica ventana fija [P, código fuente 11.2.1].
+- Almacenamiento: opciones de los puntos 4 y 5, ninguna elegida.
+- Comportamiento bajo carga, incluida la carga que el propio limitador añade a su almacén (con rate-limiter-flexible sobre PostgreSQL, una escritura por petición contada [P, código fuente 11.2.1]).
+- Fallo del almacén: punto 8.
+- Cardinalidad y expiración de claves. Comportamiento por defecto de rate-limiter-flexible 11.2.1 sobre PostgreSQL [P, código fuente], que no es un valor de DomiSport: tabla creada sin `UNLOGGED` y limpieza periódica en cada proceso de las claves caducadas hace más de una hora.
+
+**10. Tarea de PLAN: PENDING**
+- Ninguna tarea de PLAN resuelve hoy DS-DEC-040.
+- No se asigna ni se reasigna sin autorización explícita del propietario.
+
 **Evidencia**
 - [P]: Cloudflare (disponibilidad por plan, cálculo de la tasa, `CF-Connecting-IP`); rate-limiter-flexible (almacén PostgreSQL, incrementos atómicos, estrategia de respaldo); hono-rate-limiter 0.5.4 (versión <1.0, cabeceras en borrador); Hono sin limitador oficial.
+- [P, código fuente]: rate-limiter-flexible 11.2.1, ISC (esquema de la tabla PostgreSQL, una escritura por petición contada, ventana fija, limpieza de claves caducadas).
 - [P-r]: RFC 6585.
 
 **UNVERIFIED**
@@ -268,7 +314,7 @@
 - Tráfico real y número de réplicas.
 - Semántica de `Retry-After` con `503` según RFC 9110 (conocimiento previo no reverificado en esta sesión).
 
-**Dependencias:** DS-DEC-023, DS-DEC-033 (D4, D7 vía E-033-01), DS-DEC-006-B, DS-DEC-006-C, DS-DEC-006-D, DS-DEC-004-A, DS-DEC-004-B, DS-DEC-018, DS-DEC-022-B y DS-DEC-038.
+**Dependencias:** DS-DEC-023, DS-DEC-033 (D4, D7 vía E-033-01), DS-DEC-006-B, DS-DEC-006-C, DS-DEC-006-D, DS-DEC-004-A, DS-DEC-004-B, DS-DEC-018, DS-DEC-022-B, DS-DEC-038, DS-DEC-003, DS-DEC-024, DS-DEC-026 y DS-DEC-030.
 
 ## Incidencias de proceso
 
