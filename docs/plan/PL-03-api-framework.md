@@ -76,7 +76,7 @@
 | D8 | **Revisión previa** en DS-DEC-038 antes de usar los middleware de seguridad de Hono (JWT, restricción de IP, `serveStatic`); política de actualizaciones y avisos |
 | D9 | **Fastify como alternativa documentada**, a considerar solo antes del lanzamiento |
 
-**Arquitectura de límite de peticiones propuesta para D7.** Con la topología de DS-DEC-023, el CDN no puede proteger la API porque la API es privada.
+**Arquitectura de límite de peticiones propuesta para D7.** Con la topología de DS-DEC-023, el CDN no puede proteger la API porque la API es privada. [ver E-033-02]
 
 | Capa | Qué protege | Evidencia |
 |---|---|---|

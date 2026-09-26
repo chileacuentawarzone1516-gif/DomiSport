@@ -43,10 +43,10 @@ La única excepción es la PoC PL-01, en las condiciones indicadas más abajo.
 | PL-09 | Modelo de frescura y estructura de SLO | 018 | PL-07 | Dis + DH | No iniciada |
 | PL-10 | Diseño detallado de procedencia y purga | Condición de 024 | PL-07 | Dis + DH | No iniciada |
 | PL-11 | Diseño del contrato /v1, en texto | 022-C | PL-01, 07, 09, 10 | Dis + DH | No iniciada |
-| PL-12 | Estrategia de actualización en vivo | 030 | PL-09, 023, 006-C | Dis + DH | No iniciada |
-| PL-13 | Modelo de presupuesto de peticiones | 031 | PL-12 | Dis + DH | No iniciada |
+| PL-12 | Estrategia de actualización en vivo | 030 | PL-09, 023, 006-C. Cierre condicionado a: 006-D (PL-20), 002 (PL-21), 003 (PL-04), 017 (PL-08), 022-C (PL-11), 031 (PL-13, iterativa), 040 | Dis + DH | No iniciada |
+| PL-13 | Modelo de presupuesto de peticiones | 031 | PL-12 (relación iterativa con PL-12, ver DS-DEC-030). Cierre condicionado a: límites contractuales (E-01, E-02), 007/009 (PL-21), E-06 | Dis + DH | No iniciada |
 | PL-14 | Arquitectura del worker e interfaz de adaptadores | 037 | PL-08, 13, 006-A | Dis + DH | No iniciada |
-| PL-15 | Línea base de seguridad | 038 | PL-05, 11, 14 | Dis + DH | No iniciada |
+| PL-15 | Línea base de seguridad | 038 | PL-05, 11, 14. Cierre condicionado a (proxy de confianza): 006-B y 006-D (PL-20) | Dis + DH | No iniciada |
 | PL-16 | Observabilidad | 032 | PL-09, 14 | Inv + Dis + DH | No iniciada |
 | PL-17 | Estrategia de pruebas y puertas de CI | 039 | PL-01, 05, 08, 11 | Dis + DH | No iniciada |
 | PL-18 | Superficies internas y CMS | 005 | PL-08, 15 | Inv + Dis + DH | No iniciada |
@@ -56,14 +56,16 @@ La única excepción es la PoC PL-01, en las condiciones indicadas más abajo.
 | PL-22 | Orden de implementación y matriz de dependencias | — | PL-01 a PL-19 | Dis + DH | No iniciada |
 | PL-23 | Revisión de cierre de PLAN | — | PL-22 | DH | No iniciada |
 
+"Depende de" indica lo necesario para iniciar una tarea. Una tarea puede iniciarse y no poder cerrarse mientras una decisión de la que depende su cierre siga pendiente o bloqueada. Esas dependencias se indican como "Cierre condicionado a" y no cambian el estado de la tarea.
+
 Los criterios de aceptación de cada tarea son los aprobados en la transición a PLAN (2026-09-24). Se desarrollarán en este documento al ejecutar cada tarea.
 
 ## Tareas externas del propietario
 
 | ID | Acción | Desbloquea |
 |---|---|---|
-| E-01 | Cuestionario a LIDOM y DigiSport ABH | 007 |
-| E-02 | Cuestionarios a Sportradar, SportsDataIO, MySportsFeeds y BALLDONTLIE | 009, 029 |
+| E-01 | Cuestionario a LIDOM y DigiSport ABH | 007. Aporta evidencia a 031 y 018 solo si el cuestionario incluye cuotas, frecuencia de actualización, latencia y modalidad de entrega (contenido no registrado en `docs/`: UNVERIFIED) |
+| E-02 | Cuestionarios a Sportradar, SportsDataIO, MySportsFeeds y BALLDONTLIE | 009, 029. Aporta evidencia a 031 y 018 solo si el cuestionario incluye cuotas, frecuencia de actualización, latencia y modalidad de entrega (contenido no registrado en `docs/`: UNVERIFIED) |
 | E-03 | Consulta a un abogado dominicano | 027 y la vía L3 de 007 |
 | E-04 | Medir la latencia desde un equipo en la RD (crear cuentas requiere autorización aparte) | 004-B, 006-B, 006-D |
 | E-05 | Ampliar el acceso de red del entorno | PL-20; lectura del *Winter League Agreement* |

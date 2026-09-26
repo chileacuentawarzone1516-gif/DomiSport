@@ -11,7 +11,7 @@ No contiene código de producción.
 |---|---|
 | Fase 0 — Descubrimiento, auditoría e investigación (0 → 0.3) | Cerrada |
 | Decision Gate | Cerrado y aprobado por el propietario (2026-09-24) |
-| PLAN | En curso — solo PL-01 autorizada |
+| PLAN | En curso — PL-01, PL-02 y PL-03 cerradas; ninguna tarea nueva autorizada (ver [plan/PLAN.md](plan/PLAN.md)) |
 | IMPLEMENTATION | **No autorizada** |
 
 Flujo de trabajo (DS-DEC-001):
