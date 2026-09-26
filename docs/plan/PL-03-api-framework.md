@@ -97,7 +97,7 @@
 | Tema | Decisión o tarea |
 |---|---|
 | Streaming/SSE y validación de respuestas | DS-DEC-030 |
-| Límite de peticiones | DS-DEC-031 / DS-DEC-038 |
+| Límite de peticiones | DS-DEC-031 / DS-DEC-038 [ver E-033-01] |
 | Middleware de seguridad, política de actualizaciones, proxy de confianza para la IP del cliente | DS-DEC-038 |
 | Reglas de dependencias, herramienta de CI, gestor de paquetes, ubicación del envoltorio de rutas | Política de arquitectura / PL-05 (DS-DEC-035) |
 | Consumo de contratos desde la web | PL-04 (DS-DEC-003) |
