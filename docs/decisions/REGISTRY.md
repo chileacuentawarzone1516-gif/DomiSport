@@ -27,7 +27,7 @@
 | DS-DEC-013 | DomiSport API como frontera del sistema | APPROVED | C20–C23 | — |
 | DS-DEC-014 | MLB Stats API | APPROVED | DS-SRC-001 = DO_NOT_USE. Reapertura solo con licencia o permiso escrito verificable más decisión explícita del propietario | — |
 | DS-DEC-015 | Web vía HTTP o capa compartida | SUPERSEDED | Reemplazada por DS-DEC-013, C20 y DS-DEC-023 | — |
-| DS-DEC-016 | Estrategia de IDs canónicos | PENDING | — | PL-06 |
+| DS-DEC-016 | Estrategia de IDs canónicos | PROPOSED | Estrategia propuesta en PL-06, no aprobada. Versión UUID (v4/v7) pendiente; RFC 9562 UNVERIFIED (ver detalle) | PL-06; 004-A (interpretación provisional); C16, C21, C23; 022-B, 024, 025, 026 |
 | DS-DEC-017 | Pipeline de validación y cuarentena | PENDING | Determinista; revisión humana (C16) | PL-08 |
 | DS-DEC-018 | Modelo de frescura y SLO | PENDING | `source_updated_at` puede ser `NULL` | PL-09; latencia de proveedores |
 | DS-DEC-019 | Exposición según derechos y consumidor | SUPERSEDED | Reemplazada por DS-DEC-023 y DS-DEC-024 | — |
@@ -64,6 +64,27 @@
 - Decisión: una capa CDN delante de la web, basada en estándares HTTP de caché (`Cache-Control`, `stale-while-revalidate`, `ETag`), con proveedor sustituible.
 - Condición: el proveedor concreto queda en DS-DEC-006-D (PENDING). Ninguna función propietaria del CDN puede convertirse en dependencia arquitectónica irreversible.
 - Evidencia disponible: en Cloudflare Free la purga por etiqueta está limitada a 5 peticiones/min [P]. `stale-while-revalidate` está disponible en todos los planes de Cloudflare [P].
+
+### DS-DEC-016 — Estrategia de IDs canónicos
+- Estado: **PROPOSED** (2026-09-26; paso de PENDING a PROPOSED autorizado por el propietario en la fase de documentación de PL-06). No aprobada.
+- Base: [../plan/PL-06-canonical-ids.md](../plan/PL-06-canonical-ids.md). PL-06 desarrolla la estrategia; todo su contenido es propuesta salvo las restricciones ya aprobadas.
+- Interpretación **provisional** de DS-DEC-004-A: lectura (b). Aprueba PostgreSQL estándar y portable, sin extensiones propietarias, y permite generar UUIDv7 desde la aplicación, pero no aprueba por sí sola el formato del ID canónico. DS-DEC-004-A no se modifica. La compatibilidad de las alternativas de versión UUID se evaluará respecto del texto finalmente aprobado.
+
+**Propuesta (pendiente de decisión del propietario):**
+1. Alcance: entidades canónicas del dominio y sus correspondencias con IDs externos. Los identificadores internos de implementación quedan fuera y los definen sus propias tareas o decisiones.
+2. Representación: UUID en representación textual estándar, sin prefijo de tipo, generado en la aplicación y opaco para los consumidores. **Versión (v4 o v7): PENDIENTE**; no se elige ninguna.
+3. Creación: pueden generar IDs el paso de resolución del flujo de ingesta (incluido el resultado de una revisión humana) y el adaptador manual (C23); no pueden la web, la API pública ni los adaptadores de proveedor. Solo una resolución determinista y no ambigua puede conducir a creación automática (propuesta de PL-06, no aprobada por C16); la ambigüedad requiere revisión humana (C16).
+4. Estabilidad: IDs inmutables. **No reutilización** en ningún estado, tampoco tras una purga.
+5. Correspondencia: clave externa = (fuente, espacio de nombres del proveedor, ID externo opaco). Una clave externa tiene como mucho una correspondencia `active`; un ID canónico puede tener varias.
+6. Estados de resolución: `resolved`, `created`, `ambiguous`, `deferred`, `rejected`. Las reglas de emparejamiento y resolución de entidades quedan fuera; **asignación PENDIENTE** (PL-08 es solo candidata; se decidirá al auditar PL-08).
+7. Ciclo de vida del ID canónico: `active`, `merged`, `split`, `retired`. Grafo de sucesión acíclico, sin reescribir vínculos históricos; un sucesor puede cambiar de estado después y siempre se puede determinar el sucesor vigente o que no existe. Fusión y división con revisión humana (propuesta de PL-06, no extensión aprobada de C16).
+8. Historial de correspondencias: `active`, `superseded`, `invalidated`, `retired`, `purged`. Los intervalos representan el conocimiento y la validez registrados por DomiSport, no la historia real del proveedor. Conservación sujeta a DS-DEC-024.
+9. Exposición: `/v1` usa IDs canónicos (DS-DEC-022-B) y no expone IDs externos (C21, DS-DEC-025). Esquemas y códigos HTTP: PL-11.
+10. Clasificación (DS-DEC-026): los IDs externos se tratan como clase 2 por la regla de denegar por defecto. "IDs canónicos = clase 1" es solo una **propuesta**, no condición de implementación. Datos personales y payload/logs: pendientes.
+- Criterios de aceptación: funcionales 1–17 y controles documentales M1–M3, **propuestos** en el informe de PL-06. Los controles M1–M3 no forman parte de la decisión.
+- Evidencia: consulta acotada de RFC 9562 autorizada (H9 = vía B). **RFC 9562 no fue accesible desde el entorno** (política de red); las propiedades de UUIDv4 y UUIDv7 y su representación textual son UNVERIFIED.
+- Fuera de alcance: catálogo de entidades (PL-07), reglas de emparejamiento y cuarentena, purga (PL-10), contrato detallado (PL-11), coordinación entre réplicas (PL-14), URLs (PL-19), implementación.
+- Pendientes: versión UUID; clase de los IDs canónicos; datos personales y logs (E-03); asignación de las reglas de emparejamiento; aprobación de los criterios de aceptación.
 
 ### DS-DEC-023 — API protegida
 - Estado: APPROVED WITH CONDITION (propietario, 2026-09-24).

@@ -3,7 +3,8 @@
 - PL-01: completada y aprobada (DS-DEC-028 → APPROVED, 2026-09-24).
 - PL-02: completada (DS-DEC-034 → APPROVED WITH CONDITION, 2026-09-24).
 - PL-03: cerrada (DS-DEC-033 → APPROVED WITH CONDITION, 2026-09-26).
-- Autorizado: ninguna tarea nueva. PL-04 y PL-05 no se inician sin aprobación explícita.
+- PL-06: PLAN completado; en fase de DOCUMENTACIÓN (2026-09-26). DS-DEC-016 → PROPOSED, no aprobada ([informe](PL-06-canonical-ids.md)).
+- Autorizado: PL-06 (auditoría, PLAN y documentación). Ninguna otra tarea nueva. PL-04 y PL-05 no se inician sin aprobación explícita.
 - Commits, push, PR, merges y despliegues: solo con autorización explícita (ver INC-001 en el registro de decisiones).
 - IMPLEMENTATION: **no autorizada**.
 
@@ -37,7 +38,7 @@ La única excepción es la PoC PL-01, en las condiciones indicadas más abajo.
 | PL-03 | Framework de API | 033 | PL-01, PL-02 | Inv + PoC + DH | Cerrada — DS-DEC-033 APPROVED WITH CONDITION ([informe](PL-03-api-framework.md)) |
 | PL-04 | Framework web (Next.js no se da por supuesto) | 003 | PL-02 | Inv + DH | No iniciada |
 | PL-05 | Estructura lógica del repositorio y reglas de dependencia | 035 | PL-02, 03, 04 | Dis + DH | No iniciada |
-| PL-06 | Estrategia de IDs canónicos | 016 | 004-A | Dis + DH | No iniciada |
+| PL-06 | Estrategia de IDs canónicos | 016 | 004-A | Dis + DH | En documentación — PLAN completado; DS-DEC-016 PROPOSED ([informe](PL-06-canonical-ids.md)) |
 | PL-07 | Modelo canónico lógico v0 (sin DDL) | 036 | PL-06, 024 | Dis + DH | No iniciada |
 | PL-08 | Pipeline de validación y cuarentena | 017 | PL-07 | Dis + DH | No iniciada |
 | PL-09 | Modelo de frescura y estructura de SLO | 018 | PL-07 | Dis + DH | No iniciada |
