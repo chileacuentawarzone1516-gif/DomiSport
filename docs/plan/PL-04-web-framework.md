@@ -2,17 +2,23 @@
 
 ## 0. Estado
 
-- Estado de PL-04: **En curso — RESEARCH documental; en pausa por E7(c)**. PL-04 **no está cerrada**.
+- Estado de PL-04: **En curso — RESEARCH documental realizada; E7(c) sin resolver; excepción del parámetro 7 registrada (sección 28); PoC limitada planificada y no ejecutada (sección 12.7)**. PL-04 **no está cerrada**.
 - **DS-DEC-003: `PENDING`** (sin cambios). Ningún framework está seleccionado.
-- Filtro documental E1–E8: **0 candidatos lo superan actualmente** (sección 22).
+- Filtro documental E1–E8: **0 candidatos lo superan actualmente** (sección 22). La excepción del parámetro 7 no modifica el filtro.
 - Tipo de tarea: `Inv + DH`.
-- Autorizaciones del propietario (todas el 2026-09-27):
-  - AUDIT de PL-04 (solo lectura).
-  - PLAN de PL-04, aprobado con los parámetros 1–15 y las correcciones posteriores (secciones 5–12).
-  - RESEARCH documental 1 con el mecanismo M-P y la lista de dominios y repositorios de la sección 5.
-  - RESEARCH documental 2, limitada a E1–E8 de seis candidatos.
-  - Fase DOCUMENT (este informe).
-- **No autorizado y no realizado:** PoC, fase comparativa C1–C11, selección de framework, cierre de PL-04, `access:"push"` en GitHub, excepción del parámetro 7, evaluación de Angular 21.
+- Autorizaciones del propietario:
+  - 2026-09-27:
+    - AUDIT de PL-04 (solo lectura).
+    - PLAN de PL-04, aprobado con los parámetros 1–15 y las correcciones posteriores (secciones 5–12).
+    - RESEARCH documental 1 con el mecanismo M-P y la lista de dominios y repositorios de la sección 5.
+    - RESEARCH documental 2, limitada a E1–E8 de seis candidatos.
+    - Fase DOCUMENT (este informe).
+  - 2026-10-03:
+    - AUDIT del estado y verificación del estado consolidado de E1–E8 (solo lectura).
+    - Opción 3 de la sección 25: excepción del parámetro 7 para un máximo de 3 candidatos y AUDIT + PLAN de una PoC limitada, sin ejecutarla.
+    - Ratificación de React Router 8.4.0 y SvelteKit 2.70.3 como candidatos de la excepción. No se autoriza un tercer candidato.
+    - Modificación documental para registrar la excepción y congelar las reglas de clasificación de la PoC limitada (secciones 12.7 y 28).
+- **No autorizado y no realizado:** ejecución de la PoC (incluida la PoC limitada de la sección 12.7), fase comparativa C1–C11, selección de framework, cierre de PL-04, `access:"push"` en GitHub, tercer candidato de la excepción, evaluación de Angular 21.
 - Fechas en `America/Santo_Domingo` (UTC−4), según la convención de fechas de [../decisions/README.md](../decisions/README.md).
 - Marcas de este documento:
   - estados de criterio: **C** Cumple · **P** Parcial · **NC** No cumple · **U** `UNVERIFIED`;
@@ -258,9 +264,11 @@ Texto literal de [../decisions/README.md](../decisions/README.md), sin cambios:
 4. Los candidatos que entran por autorización expresa cuentan dentro del máximo de 3.
 5. La referencia de control entra en la PoC fuera del máximo de 3, solo como línea base técnica y comparativa (parámetro 9).
 
+Aplicación del parámetro 7 en PL-04: sección 28.
+
 ## 12. PoC: metodología (no ejecutada)
 
-La PoC necesita autorización aparte. **No está autorizada y no se ha ejecutado.**
+La PoC necesita autorización aparte. **No está autorizada y no se ha ejecutado.** La PoC limitada por excepción (sección 12.7) está planificada; su ejecución tampoco está autorizada.
 
 ### 12.1 Condiciones
 
@@ -327,6 +335,62 @@ AC-9 evalúa **la capacidad del framework para permitir una implementación acce
 | AC-19 | Decisión reproducible | Informe con criterios congelados, versiones fijadas, evidencia etiquetada, resultados y decisión del propietario registrada |
 
 Controles metodológicos: **CM1** evidencia etiquetada · **CM2** separación de fases · **CM3** sin datos reales ni código de producción · **CM4** criterios congelados.
+
+### 12.7 PoC limitada por excepción del parámetro 7 (planificada, no ejecutada)
+
+Registrada el 2026-10-03 junto con la excepción de la sección 28. **No se ha ejecutado y su ejecución no está autorizada:** requiere una autorización aparte del propietario. Las reglas de este apartado quedan congeladas antes de conocer resultados (sección 8.3).
+
+**Participantes**
+
+- Candidatos de la excepción, ratificados por el propietario (sección 28): **React Router 8.4.0** y **SvelteKit 2.70.3**, con las versiones de su perímetro de la sección 17.
+- Referencia de control (secciones 11 y 13; parámetro 9): servidor Node sin framework de interfaz (`node:http`) en Node 24 LTS. Queda fuera del máximo de 3, no es candidata y solo sirve como línea base técnica para validar el banco de pruebas.
+
+**Alcance**
+
+- Solo las pruebas V1, V3, V4 y V5 de la sección 12.2.
+- Fuera de alcance: V2 y V7–V10, que alimentan C1–C11 (solo se aplican a quienes superen el filtro, sección 23), y V6 (R10).
+- E1, E4, E5 y E7 no se prueban. **La PoC limitada no puede verificar ni resolver E7(c).**
+
+**Condiciones** (las de la sección 12.1, y además):
+
+- Node 24.21.0 (sección 14.3). No se sustituye por otra versión de Node.
+- TypeScript 5.9.3, zod 4.6.5 y `@asteasolutions/zod-to-openapi` 9.1.0 (DS-DEC-033, D1; [PL-03](PL-03-api-framework.md)).
+- Paquetes de los candidatos en las versiones exactas de la sección 17. Las dependencias transitivas quedan fijadas en `package-lock.json`, que se registra.
+- Imagen base de contenedor de Node 24.21.0 fijada por digest.
+- `packages/contracts` sintético sin Hono. Credencial de servicio sintética (un valor aleatorio por ejecución). API `/v1` simulada solo en local.
+- Navegador Chromium sin interfaz, con Playwright en versión fijada y registrada.
+- Sin generadores de proyecto que descarguen plantillas.
+- La organización en workspaces de npm es solo de la PoC: no decide la estructura del repositorio ni la herramienta de D6 (PL-05).
+
+**Precondición y parada**
+
+- Comprobación del 2026-10-03 en el entorno de la sesión: Node 24 no está instalado (está disponible v22.22.0); el cliente Docker existe y el daemon no está en ejecución. La posibilidad de descargar Node 24.21.0 y la imagen base es `UNVERIFIED`.
+- Si no se puede disponer de Node 24.21.0 o de Docker, la PoC se detiene y se informa al propietario. E2 queda en `UNVERIFIED`. No se sustituye por Node 22 ni por una ejecución fuera de contenedor.
+
+**Pruebas**
+
+| Prueba | Criterio | Procedimiento | Se supera si… | Es inválida si… |
+|---|---|---|---|---|
+| V4 | E6 (R6, R7) | La web importa esquemas y tipos de `packages/contracts` en el servidor y solo tipos en el cliente. Compilación estricta con TypeScript 5.9.3 y construcción de producción. `npm ls` de Hono, de la base de datos y de los adaptadores. Búsqueda en la salida de la marca de un paquete centinela. Variante A (ESM compilado con `.d.ts`) y variante B (TypeScript fuente) | Compila y se construye; no se resuelven Hono, la base de datos ni los adaptadores; la marca no aparece; hay una sola instancia de zod; funciona al menos la variante A | Con la variante `contracts-tainted` (control negativo), la marca no aparece y la construcción no falla |
+| V1 | Apoyo experimental a E3 (R1, R2) | Página renderizada en servidor que llama a la API simulada con la credencial sintética. Búsqueda de la credencial (en claro, base64, hexadecimal y tras descomprimir) en la salida de cliente de la construcción, el HTML, los recursos que recibe el navegador, los datos de la navegación en el cliente, las cabeceras y la página de error cuando la API simulada devuelve 500. Comprobación de que el navegador no llama a la API simulada. Intento de importar un módulo solo de servidor desde código de cliente, con el resultado registrado | La credencial no aparece en ninguna salida de cliente y el navegador no llama a la API simulada | Un control positivo que expone la credencial a propósito no se detecta |
+| V3 | E8 (R9) | `/poc/live` y `/poc/live-b` con `Cache-Control` distintos (valores solo de prueba, sección 6), `ETag` y `Last-Modified`; la página `/` con su propio `Cache-Control`. `If-None-Match` vigente → 304; `ETag` obsoleta → 200; `If-Modified-Since` → 304; 10 sondeos condicionales con un cambio de datos intermedio. Captura de las cabeceras en bruto | Cada ruta entrega exactamente las cabeceras fijadas y las respuestas 304 y 200 son correctas | La referencia de control no supera la misma prueba |
+| V5 | E2 (R3) | Dockerfile de varias etapas con la imagen base fijada por digest; la etapa final contiene solo la salida de la construcción y las dependencias de producción; arranque con `node`. En el contenedor: `node --version` = v24.21.0, `GET /` = 200, V1 y V3 repetidas, proceso `node` sin servidor de desarrollo y servicio tras reiniciar | Se cumplen todas las comprobaciones | El fallo se debe al entorno (sin daemon o sin imagen) |
+| Control | Banco de pruebas | V1, V3 y V5 con `node:http` | Supera las tres | Si falla, todos los resultados de la PoC limitada quedan inválidos |
+
+Cada prueba se repite desde una instalación limpia (`npm ci`).
+
+**Reglas de clasificación (congeladas)**
+
+1. La evidencia de la PoC limitada es **experimental**. Se cita como «PoC limitada, Vn», con fecha y hora en `America/Santo_Domingo`, versiones, SHA-256 de `package-lock.json`, digest de la imagen y SHA-256 de los artefactos. **Nunca** lleva la etiqueta `P` ni otra de la sección 8.1, y nunca se presenta como evidencia documental sobre el mantenimiento oficial.
+2. Si V5, V4 o V3 se superan completas, E2, E6 o E8 pueden pasar a Cumple **solo para la versión y la configuración registradas** (sección 8.2). E8 puede quedar en Parcial si se supera con una limitación, que se registra.
+3. **E3 permanece en `UNVERIFIED` aunque V1 tenga éxito**, porque E3 exige un límite documentado (sección 6). El resultado de V1 se registra solo como apoyo experimental.
+4. Un fallo deja el criterio en `UNVERIFIED`. Solo produce No cumple si la PoC demuestra la imposibilidad de forma reproducible y no atribuible a la configuración, con revisión del propietario.
+5. Una prueba inválida (control positivo o negativo fallido, fallo del entorno o fallo de la referencia de control) deja el criterio en `UNVERIFIED`.
+6. **E7(c) permanece en `UNVERIFIED`** con cualquier resultado. Ningún resultado de la PoC limitada modifica E1, E4, E5, E7, el filtro (sección 22) ni DS-DEC-003.
+7. Los criterios de aceptación de la sección 12.6 se refieren al framework elegido. La PoC limitada solo registra los resultados de V1, V3, V4 y V5 y **no declara cumplido ningún criterio de aceptación**.
+8. Aunque se superaran todas las pruebas, **el filtro seguiría en 0**: E3 y E7 seguirían en `UNVERIFIED` en los dos candidatos, y además E7(a) y E7(d) en SvelteKit (sección 21).
+
+Los artefactos se conservan fuera del repositorio. Dónde se conservan está pendiente de decisión del propietario (sección 26.1).
 
 ## 13. Candidatos y versiones evaluadas
 
@@ -501,7 +565,7 @@ La lista de paquetes del perímetro salió de los metadatos, porque la documenta
   - las herramientas GitHub de la sesión están limitadas al repositorio del proyecto;
   - WebFetch no produce evidencia `P`.
 - La única vía a la API que indica el entorno es **`access:"push"`, que no está autorizada**.
-- **La excepción del parámetro 7 no está autorizada.**
+- **Excepción del parámetro 7:** autorizada el 2026-10-03 solo para React Router 8.4.0 y SvelteKit 2.70.3 (sección 28). Es metodológica: no es evidencia sobre el estado de archivado y **E7(c) sigue en `UNVERIFIED`** para los seis candidatos.
 - Parte (ii), no declarado obsoleto: ninguna versión evaluada tiene la marca `deprecated` en el registro [`P`]. Eso cubre el paquete, no el repositorio, y no sustituye a la parte (i).
 
 ## 21. Estado consolidado de E7
@@ -538,29 +602,30 @@ La lista de paquetes del perímetro salió de los metadatos, porque la documenta
 - **`UNVERIFIED` ≠ No cumple.**
 - Esto **no** significa que los seis frameworks sean técnicamente inadecuados. Significa que **no se pudo completar la evidencia necesaria con las autorizaciones y el acceso actuales**. Los seis candidatos quedan fuera únicamente por criterios eliminatorios en `UNVERIFIED` derivados de restricciones de acceso.
 - Aunque se resolvieran todos los demás U, el filtro seguiría en 0 mientras E7(c) siga en U.
+- La excepción del parámetro 7 (sección 28) **no modifica el filtro**: React Router 8.4.0 y SvelteKit 2.70.3 entran en la PoC limitada (sección 12.7) solo por autorización expresa del propietario y no superan el filtro.
 - El único incumplimiento documentado es el de Angular 22.2.0 en E1 (provisional), y Angular no está en la RESEARCH 2.
 
 ## 23. C1–C11, PoC, framework y DS-DEC-003
 
-- **C1–C11: no ejecutados.** Solo se aplican a quienes superen el filtro.
-- **PoC: no ejecutada ni autorizada.**
-- **Framework: ninguno seleccionado.** No hay recomendación de selección.
+- **C1–C11: no ejecutados.** Solo se aplican a quienes superen el filtro. Tampoco se aplican a los candidatos de la excepción (sección 28).
+- **PoC: no ejecutada.** La PoC limitada por excepción está planificada (sección 12.7); su ejecución no está autorizada.
+- **Framework: ninguno seleccionado.** No hay recomendación de selección. Los candidatos de la excepción no están seleccionados ni recomendados.
 - **DS-DEC-003: sigue en `PENDING`.**
 
 ## 24. Estado actual y bloqueo
 
-- PL-04 está **en curso y en pausa por E7(c)**.
+- PL-04 está **en curso**. E7(c) sigue en `UNVERIFIED` y el filtro sigue en 0. El propietario eligió la opción 3 de la sección 25 (sección 28); la PoC limitada está planificada y su ejecución requiere autorización aparte.
 - El bloqueo principal es de infraestructura: el control de acceso GitHub de la sesión impide verificar E7(c).
 - Además, la política de red bloquea la documentación oficial de los seis candidatos (E1–E4, E6–E8).
 - No hay ninguna vía autorizada de solo lectura para resolver E7(c) sin cambiar permisos.
 
-## 25. Opciones metodológicas (no se selecciona ninguna)
+## 25. Opciones metodológicas
 
 1. **Habilitar la lectura de GitHub desde fuera**, sin `access:"push"` y sin aumentar permisos, para los seis repositorios oficiales. Después, verificar `archived` con M-P.
 2. **Mantener PL-04 en pausa**, con el filtro en 0.
 3. **Aplicar expresamente la excepción del parámetro 7** a candidatos concretos.
 
-Elegir una opción corresponde al propietario.
+Elegir una opción corresponde al propietario. **El 2026-10-03 el propietario eligió la opción 3**, aplicada a React Router 8.4.0 y SvelteKit 2.70.3 (sección 28). Las opciones 1 y 2 no se han elegido.
 
 ## 26. Pendientes y observaciones
 
@@ -573,6 +638,8 @@ Elegir una opción corresponde al propietario.
   - si DS-DEC-003 espera a revalidar con Node 26 o lo registra como condición;
   - de quién es el contrato de los endpoints de la web, que PL-04 no define.
 - Contrastar con la documentación oficial la evidencia mínima de E4 y la lista de paquetes del perímetro E5, solo si el propietario lo autoriza.
+- E3 de React Router y SvelteKit solo puede salir de `UNVERIFIED` con documentación oficial del límite entre servidor y cliente (secciones 6 y 12.7). Vías posibles: habilitar los hosts de documentación o autorizar la lectura de sus paquetes publicados (sin verificar que contengan esa documentación).
+- PoC limitada (sección 12.7): su ejecución requiere autorización aparte; la disponibilidad de Node 24.21.0 y de Docker en el entorno es `UNVERIFIED`; el lugar de conservación de los artefactos está por decidir.
 
 ### 26.2 Observaciones fuera de alcance (sin decisión)
 
@@ -581,7 +648,7 @@ Elegir una opción corresponde al propietario.
 - Nuxt 5 está prevista para el cuarto trimestre de 2026 (estimado).
 - `@solidjs/start` 2.0.x publica `package.json` sin campo `license`.
 
-## 27. Historial de la investigación y correcciones (2026-09-27)
+## 27. Historial de la investigación y correcciones (2026-09-27 y 2026-10-03)
 
 1. **AUDIT** de PL-04 (solo lectura): lista para PLAN.
 2. **PLAN:** redactado, corregido (10 correcciones del propietario) y aprobado con los parámetros 1–15.
@@ -605,6 +672,57 @@ Elegir una opción corresponde al propietario.
 7. **RESEARCH 2** (15:22–15:24): E5 y E4 de SolidStart pasan a C.
 8. **Análisis de E7(c)** y verificación de capacidades: no existe una vía de solo lectura autorizada.
 9. **Verificación previa al commit y fase DOCUMENT:** este informe.
+10. **2026-10-03 — AUDIT del estado** (solo lectura) y **verificación del estado consolidado** de E1–E8 contra este informe publicado: sin discrepancias.
+11. **AUDIT + PLAN de la opción 3**, sin ejecución: regla para proponer candidatos (sección 28), PoC limitada y reglas de clasificación (sección 12.7).
+12. **Ratificación** por el propietario de React Router 8.4.0 y SvelteKit 2.70.3. Sin tercer candidato.
+13. **Modificación documental:** registro de la excepción (sección 28) y de la PoC limitada con sus reglas congeladas (sección 12.7).
+
+## 28. Excepción del parámetro 7 (opción 3)
+
+### 28.1 Autorización
+
+- 2026-10-03: el propietario autoriza la opción 3 de la sección 25: excepción de investigación del parámetro 7 para un máximo de 3 candidatos y preparación de una PoC limitada para obtener evidencia técnica sobre los criterios pendientes.
+- Candidatos ratificados por el propietario: **React Router 8.4.0** y **SvelteKit 2.70.3**. **No se autoriza un tercer candidato.**
+- La propuesta de candidatos fue de Claude. La ratificación es del propietario.
+- No autorizado: ejecutar la PoC limitada, seleccionar o recomendar un framework, modificar DS-DEC-003 y cerrar PL-04.
+
+### 28.2 Base en las reglas congeladas
+
+- Sección 11, regla 2: un candidato con `UNVERIFIED` en un eliminatorio no supera el filtro y solo puede pasar a la PoC con autorización expresa del propietario (parámetro 7).
+- Sección 11, regla 4: los candidatos que entran por autorización expresa cuentan dentro del máximo de 3.
+- Sección 6: un No cumple descarta al candidato. Angular 22.2.0 (E1 en No cumple provisional, sección 18) no puede entrar por esta excepción.
+- La excepción está prevista en las reglas congeladas: aplicarla no cambia criterios, estados, niveles ni reglas (sección 8.3).
+
+### 28.3 Base documental de la propuesta de candidatos
+
+Regla aplicada, solo con estados ya registrados en las secciones 16 y 17:
+
+- **E1 en Cumple:** E1 exige compatibilidad y soporte oficial documentados (sección 6) y la PoC no lo resuelve. AC-4 exige E1 en Cumple (sección 12.6).
+- **E4 en Cumple:** E4 queda fuera de las pruebas de la PoC limitada. AC-12 exige E4 en Cumple.
+- **E5 en Cumple:** lo cumplen los seis; no discrimina.
+
+| Candidato | E1 | E4 | E5 | Cumple la regla |
+|---|---|---|---|---|
+| Next.js 16.3.6 | U | U | C | No |
+| React Router 8.4.0 | C | C | C | Sí |
+| Astro 7.3.5 | U | C | C | No |
+| SvelteKit 2.70.3 | C | C | C | Sí |
+| Nuxt 4.5.2 | U | U | C | No |
+| SolidStart 2.0.5 | U | C | C | No |
+
+La regla no compara calidad técnica ni aplica C1–C11. **No es una clasificación ni una recomendación.** Quedar fuera no significa un resultado peor: significa que algún eliminatorio en U no lo puede resolver la PoC limitada.
+
+### 28.4 Lo que la excepción no hace
+
+- Es **exclusivamente metodológica**.
+- **E7(c) permanece en `UNVERIFIED`** para los seis candidatos. La excepción no es evidencia de que los repositorios no estén archivados.
+- No convierte ningún `UNVERIFIED` en Cumple ni modifica las secciones 16 y 21.
+- **El filtro permanece en 0** (sección 22). React Router 8.4.0 y SvelteKit 2.70.3 no superan el filtro.
+- Solo habilita su paso a la PoC limitada (sección 12.7). **La PoC no se ha ejecutado** y su ejecución requiere autorización aparte.
+- La PoC limitada no puede verificar ni resolver E7(c). **E3 permanece en `UNVERIFIED` aunque V1 tenga éxito** (sección 12.7, regla 3).
+- Ningún resultado experimental se presenta como evidencia documental primaria (`P`).
+- C1–C11 no se aplican a estos candidatos (sección 23).
+- **Ningún framework está seleccionado ni recomendado. DS-DEC-003 permanece en `PENDING`.**
 
 ## Anexo A. Evidencia utilizada
 

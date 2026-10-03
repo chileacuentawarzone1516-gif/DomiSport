@@ -4,7 +4,7 @@
 - PL-02: completada (DS-DEC-034 → APPROVED WITH CONDITION, 2026-09-24).
 - PL-03: cerrada (DS-DEC-033 → APPROVED WITH CONDITION, 2026-09-26).
 - PL-06: cerrada (DS-DEC-016 → APPROVED WITH CONDITION, 2026-09-27) ([informe](PL-06-canonical-ids.md)).
-- PL-04: autorizada por el propietario (2026-09-27); en curso — RESEARCH documental realizada; en pausa por E7(c); no cerrada; DS-DEC-003 sigue `PENDING` ([informe](PL-04-web-framework.md)).
+- PL-04: autorizada por el propietario (2026-09-27); en curso — RESEARCH documental realizada; E7(c) sin resolver y filtro en 0; excepción del parámetro 7 autorizada el 2026-10-03 para React Router 8.4.0 y SvelteKit 2.70.3; PoC limitada planificada y no ejecutada (su ejecución requiere autorización aparte); ningún framework seleccionado; no cerrada; DS-DEC-003 sigue `PENDING` ([informe](PL-04-web-framework.md)).
 - Autorizado: ninguna otra tarea nueva. PL-07 y PL-05 no se inician sin aprobación explícita.
 - Commits, push, PR, merges y despliegues: solo con autorización explícita (ver INC-001 en el registro de decisiones).
 - IMPLEMENTATION: **no autorizada**.
@@ -37,7 +37,7 @@ La única excepción es la PoC PL-01, en las condiciones indicadas más abajo.
 | PL-01 | PoC aislada de la cadena de contratos | Condición de 028; información para 033 y 034 | Autorización (concedida) | PoC + DH | Completada — 6/6 PASS; aprobada |
 | PL-02 | Lenguaje principal | 034 | PL-01 | Inv + DH | Entregada — DS-DEC-034 APPROVED WITH CONDITION |
 | PL-03 | Framework de API | 033 | PL-01, PL-02 | Inv + PoC + DH | Cerrada — DS-DEC-033 APPROVED WITH CONDITION ([informe](PL-03-api-framework.md)) |
-| PL-04 | Framework web (Next.js no se da por supuesto) | 003 | PL-02 | Inv + DH | En curso — RESEARCH documental; en pausa por E7(c); no cerrada ([informe](PL-04-web-framework.md)) |
+| PL-04 | Framework web (Next.js no se da por supuesto) | 003 | PL-02 | Inv + DH | En curso — RESEARCH documental; E7(c) sin resolver; excepción del parámetro 7 (React Router, SvelteKit); PoC limitada no ejecutada; no cerrada ([informe](PL-04-web-framework.md)) |
 | PL-05 | Estructura lógica del repositorio y reglas de dependencia | 035 | PL-02, 03, 04 | Dis + DH | No iniciada |
 | PL-06 | Estrategia de IDs canónicos | 016 | 004-A | Dis + DH | Cerrada — DS-DEC-016 APPROVED WITH CONDITION ([informe](PL-06-canonical-ids.md)) |
 | PL-07 | Modelo canónico lógico v0 (sin DDL) | 036 | PL-06, 024 | Dis + DH | No iniciada |
